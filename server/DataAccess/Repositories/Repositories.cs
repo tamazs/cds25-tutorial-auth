@@ -1,4 +1,3 @@
-using DataAccess;
 using DataAccess.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -53,4 +52,3 @@ public abstract class BaseRepository<T>(AppDbContext context) : IRepository<T>
         await context.SaveChangesAsync();
     }
 }
-
