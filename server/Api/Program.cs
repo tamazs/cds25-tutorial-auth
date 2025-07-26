@@ -9,10 +9,23 @@ namespace Api;
 
 public class Program
 {
-    public static void Main(String[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        ConfigureServices(builder);
 
+        var app = builder.Build();
+
+        if (args is [.., "setup", var defaultPassword])
+            SetupDatabase(app, defaultPassword);
+
+        ConfigureApp(app);
+
+        await app.RunAsync();
+    }
+
+    public static void ConfigureServices(WebApplicationBuilder builder)
+    {
         // Entity Framework
         var connectionString = builder.Configuration.GetConnectionString("AppDb");
         builder.Services.AddDbContext<AppDbContext>(options =>
@@ -33,19 +46,19 @@ public class Program
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
+    }
 
-        var app = builder.Build();
-
-        // Setup database
-        if (args is [.., "setup", var defaultPassword])
+    public static void SetupDatabase(WebApplication app, string defaultPassword)
+    {
+        using (var scope = app.Services.CreateScope())
         {
-            using (var scope = app.Services.CreateScope())
-            {
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                new DbSeeder(dbContext, defaultPassword).SetupAsync().Wait();
-            }
+            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            new DbSeeder(dbContext, defaultPassword).SetupAsync().Wait();
         }
+    }
 
+    public static WebApplication ConfigureApp(WebApplication app)
+    {
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
@@ -59,5 +72,7 @@ public class Program
         app.MapControllers();
 
         app.Run();
+
+        return app;
     }
 }
