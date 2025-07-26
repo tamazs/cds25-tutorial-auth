@@ -77,7 +77,8 @@ public class BlogService(
                 new Responses.Author(x.user.Id, x.user!.UserName!),
                 (DateTime)x.post.PublishedAt!,
                 x.post.UpdatedAt > x.post.PublishedAt ? x.post.UpdatedAt : null
-            ));
+            ))
+            .ToArray();
     }
 
     public async Task<long> CreateComment(long postId, Requests.CommentFormData data)

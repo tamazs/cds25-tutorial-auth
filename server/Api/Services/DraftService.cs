@@ -46,7 +46,8 @@ public class DraftService(
                 x.post.Id,
                 x.post.Title,
                 new Responses.Writer(x.user.Id, x.user!.UserName!)
-            ));
+            ))
+            .ToArray();
     }
 
     public async Task<long> Create(Requests.DraftFormData data)
