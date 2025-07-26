@@ -1,11 +1,9 @@
-using Api.Etc;
 using DataAccess.Repositories;
-
-namespace Api.Services;
-
 using Entities = DataAccess.Entities;
 using Requests = Api.Models.Dtos.Requests;
 using Responses = Api.Models.Dtos.Responses;
+
+namespace Api.Services;
 
 public interface IBlogService
 {
@@ -22,56 +20,39 @@ public class BlogService(
 {
     public Responses.PostDetail GetById(long id)
     {
+        var post = _postRepository
+            .Query()
+            // Only post that has been published
+            .Single(post => post.Id == id && post.PublishedAt != null);
+        var author = _userRepository
+            .Query()
+            .Select(user => new Responses.Author(user.Id, user.UserName))
+            .Single(user => user.Id == post!.AuthorId);
         var comments = _commentRepository
             .Query()
+            .Where(comment => comment.PostId == post.Id)
             .Join(
                 _userRepository.Query(),
                 comment => comment.AuthorId,
                 user => user.Id,
-                (comment, user) => new { comment, user }
+                (comment, user) =>
+                    new Responses.CommentForPost(
+                        comment.Id,
+                        comment.Content,
+                        comment.CreatedAt,
+                        new Responses.Author(author!.Id, author!.UserName!)
+                    )
             )
-            .Where(x => x.comment.PostId == id);
-        var post = _postRepository
-            .Query()
-            .Join(
-                _userRepository.Query(),
-                post => post.AuthorId,
-                user => user.Id,
-                (post, user) => new { post, user }
-            )
-            .GroupJoin(
-                comments,
-                x => x.post.Id,
-                comment => comment.comment.PostId,
-                (x, comments) =>
-                    new
-                    {
-                        x.post,
-                        x.user,
-                        comments
-                    }
-            )
-            .Where(post => post.post.Id == id && post.post.PublishedAt != null)
-            .Select(post => new Responses.PostDetail(
-                post.post.Id,
-                post.post.Title,
-                post.post.Content,
-                new Responses.Author(post.user.Id, post.user.UserName!),
-                post.comments.Select(comment => new Responses.CommentForPost(
-                    comment.comment.Id,
-                    comment.comment.Content,
-                    comment.comment.CreatedAt,
-                    new Responses.Author(comment.user.Id, comment.user.UserName!)
-                )),
-                (DateTime)post.post.PublishedAt!,
-                post.post.UpdatedAt > post.post.PublishedAt ? post.post.UpdatedAt : null
-            ))
-            .FirstOrDefault();
-        if (post == null)
-        {
-            throw new NotFoundError(nameof(Responses.PostDetail), new { Id = id });
-        }
-        return post;
+            .ToArray();
+        return new Responses.PostDetail(
+            post.Id,
+            post.Title,
+            post.Content,
+            author!,
+            comments,
+            (DateTime)post.PublishedAt!,
+            post.UpdatedAt > post.PublishedAt ? post.UpdatedAt : null
+        );
     }
 
     public IEnumerable<Responses.Post> Newest(Requests.PostsQuery query)

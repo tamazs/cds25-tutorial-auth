@@ -1,4 +1,3 @@
-using Api.Etc;
 using DataAccess.Repositories;
 using Entities = DataAccess.Entities;
 using Requests = Api.Models.Dtos.Requests;
@@ -22,10 +21,8 @@ public class DraftService(
 
     public Responses.DraftDetail GetById(long id)
     {
-        var post =
-            _postRepository.Query().SingleOrDefault(x => x.Id == id)
-            ?? throw new NotFoundError(nameof(Entities.Post), new { Id = id });
-        var user = _userRepository.Query().SingleOrDefault(x => x.Id == post.AuthorId)!;
+        var post = _postRepository.Query().Single(x => x.Id == id);
+        var user = _userRepository.Query().Single(x => x.Id == post.AuthorId);
         return new Responses.DraftDetail(
             Id: post.Id,
             Title: post.Title,
@@ -69,9 +66,7 @@ public class DraftService(
 
     public async Task Update(long id, Requests.DraftFormData data)
     {
-        var post =
-            _postRepository.Query().SingleOrDefault(x => x.Id == id)
-            ?? throw new NotFoundError(nameof(Entities.Post), new { id });
+        var post = _postRepository.Query().Single(x => x.Id == id);
         post.Title = data.Title;
         post.Content = data.Content;
         post.UpdatedAt = DateTime.UtcNow;
@@ -84,9 +79,7 @@ public class DraftService(
 
     public async Task Delete(long id)
     {
-        var post =
-            _postRepository.Query().SingleOrDefault(x => x.Id == id)
-            ?? throw new NotFoundError(nameof(Entities.Post), new { id });
+        var post = _postRepository.Query().Single(x => x.Id == id);
         await _postRepository.Delete(post);
     }
 }
