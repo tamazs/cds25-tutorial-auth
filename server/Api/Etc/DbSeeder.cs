@@ -3,49 +3,27 @@ using DataAccess.Entities;
 
 namespace Api.Etc;
 
-public class DbSeeder(AppDbContext context, String defaultPassword)
+public class DbSeeder(AppDbContext context)
 {
-    public async Task SetupAsync()
+    public async Task SetupAsync(String defaultPassword)
     {
         context.Database.EnsureCreated();
         if (!context.Users.Any())
         {
-            context.Users.Add(
-                new User
-                {
-                    UserName = "admin@example.com",
-                    Email = "admin@example.com",
-                    Role = Role.Admin
-                }
-            );
-            context.Users.Add(
-                new User
-                {
-                    UserName = "editor@example.com",
-                    Email = "editor@example.com",
-                    Role = Role.Editor
-                }
-            );
-            context.Users.Add(
-                new User
-                {
-                    UserName = "othereditor@example.com",
-                    Email = "othereditor@example.com",
-                    Role = Role.Editor
-                }
-            );
-            context.Users.Add(
-                new User
-                {
-                    UserName = "reader@example.com",
-                    Email = "reader@example.com",
-                    Role = Role.Reader
-                }
+            await CreateRoles(Role.Admin, Role.Editor, Role.Reader);
+            await CreateUsers(
+                [
+                    (email: "admin@example.com", role: Role.Admin),
+                    (email: "editor@example.com", role: Role.Editor),
+                    (email: "othereditor@example.com", role: Role.Editor),
+                    (email: "reader@example.com", role: Role.Reader),
+                ],
+                defaultPassword
             );
             await context.SaveChangesAsync();
         }
 
-        if (!context.Posts.Where(p => p.Title == "First post").Any())
+        if (!context.Posts.Any(p => p.PublishedAt != null))
         {
             var admin = context.Users.Single((user) => user.Email == "admin@example.com");
             context.Posts.Add(
@@ -64,11 +42,11 @@ print('Hello World!')
                     AuthorId = admin!.Id,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
-                    PublishedAt = DateTime.UtcNow
+                    PublishedAt = DateTime.UtcNow,
                 }
             );
         }
-        if (!context.Posts.Where(p => p.Title == "Draft").Any())
+        if (!context.Posts.Any(p => p.PublishedAt == null))
         {
             var editor = context.Users.Single((user) => user.Email == "editor@example.com");
             context.Posts.Add(
@@ -78,7 +56,7 @@ print('Hello World!')
                     Content = "This is a draft post",
                     AuthorId = editor!.Id,
                     CreatedAt = DateTime.UtcNow,
-                    PublishedAt = null
+                    PublishedAt = null,
                 }
             );
         }
@@ -92,22 +70,34 @@ print('Hello World!')
                 {
                     Content = "First one to comment",
                     AuthorId = reader.Id,
-                    PostId = context.Posts.First().Id
+                    PostId = context.Posts.First().Id,
                 }
             );
             await context.SaveChangesAsync();
         }
     }
 
-    void CreateUser(string username, string password, string role)
+# pragma warning disable CS1998
+    private async Task CreateRoles(string admin, string editor, string reader)
     {
-        var user = new User
+        // TODO implement when adding Identity
+    }
+
+# pragma warning disable CS1998
+    private async Task CreateUsers((string email, string role)[] users, string defaultPassword)
+    {
+        foreach (var user in users)
         {
-            UserName = username,
-            Email = username,
-            EmailConfirmed = true,
-            Role = role
-        };
-        context.Users.Add(user);
+            context.Users.Add(
+                new User
+                {
+                    UserName = user.email.Split("@")[0],
+                    Email = user.email,
+                    EmailConfirmed = true,
+                    Role = user.role,
+                }
+            );
+        }
+        await context.SaveChangesAsync();
     }
 }

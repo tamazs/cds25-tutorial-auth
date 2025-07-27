@@ -62,8 +62,8 @@ public class Program
     {
         using (var scope = app.Services.CreateScope())
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            new DbSeeder(dbContext, defaultPassword).SetupAsync().Wait();
+            var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
+            seeder.SetupAsync(defaultPassword).Wait();
         }
     }
 
