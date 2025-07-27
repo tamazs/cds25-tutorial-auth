@@ -1,9 +1,12 @@
 using Api.Etc;
+using Api.Etc.NSwag;
 using Api.Services;
 using DataAccess;
 using DataAccess.Entities;
 using DataAccess.Repositories;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 namespace Api;
 
@@ -46,6 +49,13 @@ public class Program
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
+        builder.Services.AddOpenApiDocument(conf =>
+        {
+            conf.DocumentProcessors.Add(new TypeMapDocumentProcessor<ProblemDetails>());
+            conf.SchemaSettings.AlwaysAllowAdditionalObjectProperties = false;
+            conf.SchemaSettings.GenerateAbstractProperties = true;
+            conf.SchemaSettings.SchemaProcessors.Add(new RequiredSchemaProcessor());
+        });
     }
 
     public static void SetupDatabase(WebApplication app, string defaultPassword)
@@ -65,11 +75,14 @@ public class Program
             app.MapOpenApi();
         }
 
-        app.UseHttpsRedirection();
+        // app.UseHttpsRedirection();
 
         app.UseAuthorization();
 
         app.MapControllers();
+
+        app.GenerateApiClientsFromOpenApi("/../../client/src/models/generated-client.ts").Wait();
+        app.MapScalarApiReference();
 
         app.Run();
 
