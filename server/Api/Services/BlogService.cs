@@ -26,8 +26,9 @@ public class BlogService(
             .Single(post => post.Id == id && post.PublishedAt != null);
         var author = _userRepository
             .Query()
+            .Where(user => user.Id == post!.AuthorId)
             .Select(user => new Responses.Author(user.Id, user.UserName))
-            .Single(user => user.Id == post!.AuthorId);
+            .Single();
         var comments = _commentRepository
             .Query()
             .Where(comment => comment.PostId == post.Id)
@@ -35,7 +36,7 @@ public class BlogService(
                 _userRepository.Query(),
                 comment => comment.AuthorId,
                 user => user.Id,
-                (comment, user) =>
+                (comment, author) =>
                     new Responses.CommentForPost(
                         comment.Id,
                         comment.Content,
