@@ -13,4 +13,13 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          markdown: ["react-markdown", "react-syntax-highlighter"],
+        },
+      },
+    },
+  },
 });
