@@ -36,6 +36,7 @@ public class Program
                 .UseNpgsql(connectionString)
                 .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
         );
+        builder.Services.AddScoped<DbSeeder>();
 
         // Repositories
         builder.Services.AddScoped<IRepository<User>, UserRepository>();
