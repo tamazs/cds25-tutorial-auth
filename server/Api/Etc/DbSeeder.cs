@@ -78,7 +78,7 @@ print('Hello World!')
     }
 
 # pragma warning disable CS1998
-    private async Task CreateRoles(string admin, string editor, string reader)
+    private async Task CreateRoles(params string[] roles)
     {
         // TODO implement when adding Identity
     }
