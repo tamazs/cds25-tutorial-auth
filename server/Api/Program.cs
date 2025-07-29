@@ -20,7 +20,10 @@ public class Program
         var app = builder.Build();
 
         if (args is [.., "setup", var defaultPassword])
+        {
             SetupDatabase(app, defaultPassword);
+            Environment.Exit(0);
+        }
 
         ConfigureApp(app);
 
