@@ -1,16 +1,19 @@
 using DataAccess;
 using DataAccess.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace Api.Etc;
 
-public class DbSeeder(AppDbContext context)
+public class DbSeeder(
+    AppDbContext context
+//, IPasswordHasher<User> hasher
+)
 {
     public async Task SetupAsync(String defaultPassword)
     {
         context.Database.EnsureCreated();
         if (!context.Users.Any())
         {
-            await CreateRoles(Role.Admin, Role.Editor, Role.Reader);
             await CreateUsers(
                 [
                     (email: "admin@example.com", role: Role.Admin),
@@ -77,13 +80,6 @@ print('Hello World!')
         }
     }
 
-# pragma warning disable CS1998
-    private async Task CreateRoles(params string[] roles)
-    {
-        // TODO implement when adding Identity
-    }
-
-# pragma warning disable CS1998
     private async Task CreateUsers((string email, string role)[] users, string defaultPassword)
     {
         foreach (var user in users)
@@ -95,6 +91,7 @@ print('Hello World!')
                     Email = user.email,
                     EmailConfirmed = true,
                     Role = user.role,
+                    // PasswordHash = hasher.HashPassword(null, defaultPassword),
                 }
             );
         }

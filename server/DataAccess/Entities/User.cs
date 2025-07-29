@@ -15,5 +15,7 @@ public partial class User
 
     public bool EmailConfirmed { get; set; } = true;
 
+    // public string PasswordHash { get; set; } = null!;
+
     public string Role { get; set; } = null!;
 }
