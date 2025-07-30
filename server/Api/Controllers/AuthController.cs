@@ -1,10 +1,6 @@
-using Api.Etc;
 using Api.Models.Dtos.Requests;
 using Api.Models.Dtos.Responses;
-using DataAccess.Entities;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace Api.Controllers;
 
@@ -14,35 +10,28 @@ public class AuthController : ControllerBase
 {
     [HttpPost]
     [Route("login")]
-    public async Task<LoginResponse> Login(
-        [FromServices] SignInManager<User> signInManager,
-        [FromBody] LoginRequest data
-    )
+    public async Task<LoginResponse> Login([FromBody] LoginRequest request)
     {
         throw new NotImplementedException();
     }
 
     [HttpPost]
     [Route("register")]
-    public async Task<RegisterResponse> Register(
-        IOptions<AppOptions> options,
-        [FromServices] UserManager<User> userManager,
-        [FromBody] RegisterRequest data
-    )
+    public async Task<RegisterResponse> Register([FromBody] RegisterRequest request)
     {
         throw new NotImplementedException();
     }
 
     [HttpPost]
     [Route("logout")]
-    public async Task<IResult> Logout([FromServices] SignInManager<User> signInManager)
+    public async Task<IResult> Logout()
     {
         throw new NotImplementedException();
     }
 
     [HttpGet]
     [Route("userinfo")]
-    public async Task<AuthUserInfo> UserInfo([FromServices] UserManager<User> userManager)
+    public async Task<AuthUserInfo> UserInfo()
     {
         throw new NotImplementedException();
     }
