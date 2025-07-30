@@ -60,6 +60,10 @@ public class Program
             conf.SchemaSettings.GenerateAbstractProperties = true;
             conf.SchemaSettings.SchemaProcessors.Add(new RequiredSchemaProcessor());
         });
+
+        // Exception handling
+        builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+        builder.Services.AddProblemDetails();
     }
 
     public static void SetupDatabase(WebApplication app, string defaultPassword)
@@ -78,8 +82,8 @@ public class Program
         {
             app.MapOpenApi();
         }
-
         // app.UseHttpsRedirection();
+        app.UseExceptionHandler();
 
         app.UseAuthorization();
 

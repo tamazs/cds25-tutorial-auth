@@ -13,7 +13,7 @@
         ],
         "operationId": "Auth_Login",
         "requestBody": {
-          "x-name": "data",
+          "x-name": "request",
           "content": {
             "application/json": {
               "schema": {
@@ -45,7 +45,7 @@
         ],
         "operationId": "Auth_Register",
         "requestBody": {
-          "x-name": "data",
+          "x-name": "request",
           "content": {
             "application/json": {
               "schema": {
@@ -394,14 +394,10 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "email",
-          "name"
+          "userName"
         ],
         "properties": {
-          "email": {
-            "type": "string"
-          },
-          "name": {
+          "userName": {
             "type": "string"
           }
         }
@@ -430,19 +426,19 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "username",
-          "isAdmin",
-          "canPublish"
+          "id",
+          "userName",
+          "role"
         ],
         "properties": {
-          "username": {
+          "id": {
             "type": "string"
           },
-          "isAdmin": {
-            "type": "boolean"
+          "userName": {
+            "type": "string"
           },
-          "canPublish": {
-            "type": "boolean"
+          "role": {
+            "type": "string"
           }
         }
       },

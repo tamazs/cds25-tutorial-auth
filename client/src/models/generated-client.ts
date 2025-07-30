@@ -18,11 +18,11 @@ export class AuthClient {
         this.baseUrl = baseUrl ?? "";
     }
 
-    login(data: LoginRequest): Promise<LoginResponse> {
+    login(request: LoginRequest): Promise<LoginResponse> {
         let url_ = this.baseUrl + "/api/auth/login";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(data);
+        const content_ = JSON.stringify(request);
 
         let options_: RequestInit = {
             body: content_,
@@ -55,11 +55,11 @@ export class AuthClient {
         return Promise.resolve<LoginResponse>(null as any);
     }
 
-    register(data: RegisterRequest): Promise<RegisterResponse> {
+    register(request: RegisterRequest): Promise<RegisterResponse> {
         let url_ = this.baseUrl + "/api/auth/register";
         url_ = url_.replace(/[?&]$/, "");
 
-        const content_ = JSON.stringify(data);
+        const content_ = JSON.stringify(request);
 
         let options_: RequestInit = {
             body: content_,
@@ -482,8 +482,7 @@ export interface LoginRequest {
 }
 
 export interface RegisterResponse {
-    email: string;
-    name: string;
+    userName: string;
 }
 
 export interface RegisterRequest {
@@ -493,9 +492,9 @@ export interface RegisterRequest {
 }
 
 export interface AuthUserInfo {
-    username: string;
-    isAdmin: boolean;
-    canPublish: boolean;
+    id: string;
+    userName: string;
+    role: string;
 }
 
 export interface Post {
