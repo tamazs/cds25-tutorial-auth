@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "server", "server", "{FAD6A1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api", "server\Api\Api.csproj", "{EF1F2282-BA1C-4126-AE09-7768563E6FA0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "server\Test\Test.csproj", "{7E4CABCE-EED4-483E-85D7-1A0F574F3A38}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "server\Tests\Tests.csproj", "{7E4CABCE-EED4-483E-85D7-1A0F574F3A38}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "server\DataAccess\DataAccess.csproj", "{0EEBFF57-F87E-4DB8-92D7-647AE95C25ED}"
 EndProject
