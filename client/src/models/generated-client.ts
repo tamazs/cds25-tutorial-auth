@@ -487,6 +487,7 @@ export interface RegisterResponse {
 
 export interface RegisterRequest {
     email: string;
+    userName: string;
     password: string;
     name: string;
 }

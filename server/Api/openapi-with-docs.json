@@ -407,11 +407,15 @@
         "additionalProperties": false,
         "required": [
           "email",
+          "userName",
           "password",
           "name"
         ],
         "properties": {
           "email": {
+            "type": "string"
+          },
+          "userName": {
             "type": "string"
           },
           "password": {
