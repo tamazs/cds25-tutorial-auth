@@ -23,16 +23,17 @@ internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log
             UnauthorizedAccessException => StatusCodes.Status403Forbidden,
             _ => StatusCodes.Status500InternalServerError,
         };
-        var problemDetails = new ProblemDetails
+        if (status != StatusCodes.Status500InternalServerError)
         {
-            Title = exception.Message,
-            Detail = exception.InnerException?.Message,
-            Status = status,
-        };
-
+            var problemDetails = new ProblemDetails
+            {
+                Title = exception.Message,
+                Detail = exception.InnerException?.Message,
+                Status = status,
+            };
+            await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
+        }
         httpContext.Response.StatusCode = status;
-
-        await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
         return true;
     }
