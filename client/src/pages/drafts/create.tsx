@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { DraftClient, type DraftFormData } from "../../models/generated-client";
+import { type DraftFormData } from "../../models/generated-client";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { draftClient } from "../../api-clients";
 
 export default function DraftCreate() {
   const {
@@ -12,13 +13,12 @@ export default function DraftCreate() {
   const navigate = useNavigate();
 
   const onSubmit: SubmitHandler<DraftFormData> = async (data) => {
-    const promise = new DraftClient().create(data);
-    await toast.promise(promise, {
+    await toast.promise(draftClient.create(data), {
       success: "Draft created successfully",
       error: "Draft creation failed",
       loading: "Creating draft...",
     });
-    await promise.then(() => navigate(".."));
+    navigate("..");
   };
 
   return (

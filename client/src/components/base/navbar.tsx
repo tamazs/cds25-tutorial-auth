@@ -4,6 +4,7 @@ import { useAuth } from "../../hooks/auth";
 
 export function Navbar() {
   const { user } = useAuth();
+  const canPublish = user && ["Editor", "Admin"].includes(user?.role);
   return (
     <div className="navbar mb-2 shadow-lg bg-neutral text-neutral-content rounded-box">
       <div className="flex-1">
@@ -16,7 +17,7 @@ export function Navbar() {
           <li>
             <Link to={"/"}>Home</Link>
           </li>
-          {user?.canPublish && (
+          {canPublish && (
             <li>
               <Link to={"/draft"}>Draft</Link>
             </li>

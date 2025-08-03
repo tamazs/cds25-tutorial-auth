@@ -3,10 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import {
-  AuthClient,
-  type RegisterRequest,
-} from "../../models/generated-client";
+import { type RegisterRequest } from "../../models/generated-client";
+import { authClient } from "../../api-clients";
 
 type Inputs = RegisterRequest & { passwordRepeat: string };
 
@@ -23,13 +21,11 @@ export default function Register() {
     setError(null);
     try {
       try {
-        const createPromise = new AuthClient().register(data);
-        toast.promise(createPromise, {
+        await toast.promise(authClient.register(data), {
           success: "Registered successfully",
           error: "Registration failed",
           loading: "Registering...",
         });
-        await createPromise;
         navigate("/register-success");
       } catch (e: any) {
         setError(e.message);

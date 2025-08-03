@@ -1,14 +1,8 @@
-export interface AuthUserInfo {
-  username?: string | null;
-  isAdmin?: boolean;
-  canPublish?: boolean;
-}
-
-export type Credentials = { email: string; password: string };
+import type { AuthUserInfo, LoginRequest } from "../models/generated-client";
 
 type AuthHook = {
   user: AuthUserInfo | null;
-  login: (credentials: Credentials) => Promise<void>;
+  login: (request: LoginRequest) => Promise<void>;
   logout: () => void;
 };
 
@@ -17,7 +11,11 @@ export const useAuth = () => {
 
   return {
     user: null,
-    login: async () => {},
-    logout: async () => {},
+    login: async () => {
+      throw new Error("Not implemented");
+    },
+    logout: async () => {
+      throw new Error("Not implemented");
+    },
   } as AuthHook;
 };

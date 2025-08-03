@@ -1,17 +1,25 @@
 import toast from "react-hot-toast";
-import type { Credentials } from "../../hooks/auth";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import type { LoginRequest } from "../../models/generated-client";
+import { useAuth } from "../../hooks/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Credentials>();
+  } = useForm<LoginRequest>();
 
-  const onSubmit: SubmitHandler<Credentials> = (data) => {
-    // TODO login and give user feedback
-    toast(`Login as "${data.email}". Implementation is missing!`);
+  const onSubmit: SubmitHandler<LoginRequest> = async (data) => {
+    await toast.promise(login(data), {
+      loading: "Checking credentials...",
+      success: "Welcome back 🤗",
+      error: "Sorry, can't let you in. Did you type correct?",
+    });
+    navigate("/");
   };
 
   return (

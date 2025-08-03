@@ -2,13 +2,14 @@ import Markdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { useAuth } from "../hooks/auth";
-import { BlogClient, type PostDetail } from "../models/generated-client";
+import { type PostDetail } from "../models/generated-client";
 import { useLoaderData, type LoaderFunctionArgs } from "react-router-dom";
 import Comments from "../components/post/comments";
 import CommentForm from "../components/post/comment-form";
+import { blogClient } from "../api-clients";
 
 export async function postLoader({ params }: LoaderFunctionArgs) {
-  return await new BlogClient().get(Number.parseInt(params.id!));
+  return await blogClient.get(Number.parseInt(params.id!));
 }
 
 export default function Post() {

@@ -1,6 +1,5 @@
 import toast from "react-hot-toast";
 import {
-  DraftClient,
   type DraftDetail,
   type DraftFormData,
 } from "../../models/generated-client";
@@ -11,9 +10,10 @@ import {
 } from "react-router-dom";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { Loading } from "../../components/base/loading";
+import { draftClient } from "../../api-clients";
 
 export async function draftLoader({ params }: LoaderFunctionArgs) {
-  const response = await new DraftClient().get(Number.parseInt(params.id!));
+  const response = draftClient.get(Number.parseInt(params.id!));
   return response;
 }
 
@@ -29,13 +29,13 @@ export default function DraftUpdate() {
   if (!draft) return <Loading />;
 
   const onSubmit: SubmitHandler<DraftFormData> = async (data) => {
-    const promise = new DraftClient().update(draft.id!, data);
+    const promise = draftClient.update(draft.id!, data);
     await toast.promise(promise, {
       success: "Draft updated successfully",
       error: "Draft update failed",
       loading: "Updating draft...",
     });
-    await promise.then(() => navigate("/draft"));
+    navigate("/draft");
   };
 
   return (

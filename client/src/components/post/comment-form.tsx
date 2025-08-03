@@ -1,9 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import {
-  BlogClient,
-  type CommentFormData,
-} from "../../models/generated-client";
+import { type CommentFormData } from "../../models/generated-client";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { blogClient } from "../../api-clients";
 
 export default function CommentForm({ postId }: { postId: number }) {
   const navigate = useNavigate();
@@ -14,7 +12,7 @@ export default function CommentForm({ postId }: { postId: number }) {
   } = useForm<CommentFormData>();
 
   const onSubmit: SubmitHandler<CommentFormData> = async (data) => {
-    await new BlogClient().comment(postId, data);
+    await blogClient.comment(postId, data);
     navigate("");
   };
 

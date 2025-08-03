@@ -8,7 +8,7 @@ export default function WelcomeHero() {
       <div className="hero-content text-center">
         <div className="max-w-md">
           <h1 className="text-5xl font-bold prose">Welcome</h1>
-          {user && <h2 className="prose">{user.username}</h2>}
+          {user && <h2 className="prose">{user.userName}</h2>}
           <p className="py-6 prose">
             This blog site contains interesting articles from various authors.
             Feel free to read and share your thoughts.

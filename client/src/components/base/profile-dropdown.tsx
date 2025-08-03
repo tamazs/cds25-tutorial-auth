@@ -38,7 +38,7 @@ export default function ProfileDropdown() {
         className="btn btn-ghost btn-circle avatar"
       >
         <div className="w-10 rounded-full">
-          <Avatar userName={user?.username} />
+          <Avatar userName={user?.userName} />
         </div>
       </div>
       <ul

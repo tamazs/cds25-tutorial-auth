@@ -1,8 +1,9 @@
 import { Link, useLoaderData, useRevalidator } from "react-router-dom";
-import { DraftClient, type Draft } from "../../models/generated-client";
+import { type Draft } from "../../models/generated-client";
+import { draftClient } from "../../api-clients";
 
 export async function draftsLoader() {
-  const response = await new DraftClient().list();
+  const response = draftClient.list();
   return response;
 }
 
@@ -12,7 +13,7 @@ export default function DraftList() {
 
   async function deleteDraft(id: number) {
     if (window.confirm("Are you sure you want to delete this draft?")) {
-      await new DraftClient().delete(id);
+      await draftClient.delete(id);
       revalidator.revalidate();
     }
   }
