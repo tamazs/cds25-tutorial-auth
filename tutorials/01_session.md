@@ -1,5 +1,24 @@
 # Session
 
+<!--toc:start-->
+
+- [Session](#session)
+  - [Theory](#theory)
+    - [What are JWT?](#what-are-jwt)
+    - [Session ID vs JWT](#session-id-vs-jwt)
+  - [Server implementation](#server-implementation)
+    - [Configuration](#configuration)
+    - [JWT handling](#jwt-handling)
+    - [Issue JWT on login](#issue-jwt-on-login)
+    - [Verify JWT on incoming requests](#verify-jwt-on-incoming-requests)
+  - [Client implementation](#client-implementation)
+    - [Token storage](#token-storage)
+  - [Limitations](#limitations)
+    - [Token expiration](#token-expiration)
+    - [Cross Site Scripting (XSS)](#cross-site-scripting-xss)
+  - [Conclusion](#conclusion)
+  <!--toc:end-->
+
 ## Theory
 
 In the last part we have implemented authentication.

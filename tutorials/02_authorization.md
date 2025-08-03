@@ -1,5 +1,17 @@
 # Authorization
 
+<!--toc:start-->
+
+- [Authorization](#authorization)
+  - [Theory](#theory)
+  - [Implementation](#implementation)
+    - [Simple authorization](#simple-authorization)
+    - [Role-based authorization](#role-based-authorization)
+    - [Resource-based Authorization](#resource-based-authorization)
+  - [Limitations](#limitations)
+  - [Conclusion](#conclusion)
+  <!--toc:end-->
+
 ## Theory
 
 Authentication on its own does not make a system secure.

@@ -1,5 +1,26 @@
 # Authentication
 
+<!--toc:start-->
+
+- [Authentication](#authentication)
+  - [Theory](#theory)
+    - [Factors of authentication](#factors-of-authentication)
+    - [Good passwords](#good-passwords)
+    - [Password hashing](#password-hashing)
+    - [Salt and pepper](#salt-and-pepper)
+  - [Implementation](#implementation)
+    - [Chose hashing library](#chose-hashing-library)
+    - [Test password hashing](#test-password-hashing)
+    - [Business logic](#business-logic)
+      - [Testing](#testing)
+    - [Web API](#web-api)
+      - [Testing](#testing)
+  - [Known limitations](#known-limitations)
+    - [Password recovery](#password-recovery)
+    - [Multifactor authentication (MFA)](#multifactor-authentication-mfa)
+  - [Conclusion](#conclusion)
+  <!--toc:end-->
+
 ## Theory
 
 When a user login to a web application they need to prove their identity
