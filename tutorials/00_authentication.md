@@ -780,9 +780,7 @@ dotnet run --project server/Api --watch
 
 Open <http://localhost:5153/scalar/>
 
-<video controls>
-   <source src="./assets/manual-test-login.mp4" type="video/mp4">
-</video>
+[🎬 Video: Test login](./assets/manual-test-login.mp4)
 
 Manually testing is going to be hindering as a project increase in scope, so it
 is better have automated test from the get go.
