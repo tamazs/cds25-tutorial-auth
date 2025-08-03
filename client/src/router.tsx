@@ -10,6 +10,9 @@ import Post, { postLoader } from "./pages/post";
 import Login from "./pages/auth/login";
 import Register from "./pages/auth/register";
 import RegisterSuccess from "./pages/auth/register-success";
+import DraftList, { draftsLoader } from "./pages/drafts/list";
+import DraftCreate from "./pages/drafts/create";
+import DraftUpdate, { draftLoader } from "./pages/drafts/update";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -21,15 +24,15 @@ const router = createBrowserRouter(
       <Route path="/post">
         <Route path=":id" element={<Post />} loader={postLoader}></Route>
       </Route>
-      {/* <Route path="/draft"> */}
-      {/*   <Route path="" element={<DraftList />} loader={draftsLoader}></Route> */}
-      {/*   <Route path="create" element={<DraftCreate />}></Route> */}
-      {/*   <Route */}
-      {/*     path=":id" */}
-      {/*     element={<DraftUpdate />} */}
-      {/*     loader={draftLoader} */}
-      {/*   ></Route> */}
-      {/* </Route> */}
+      <Route path="/draft">
+        <Route path="" element={<DraftList />} loader={draftsLoader}></Route>
+        <Route path="create" element={<DraftCreate />}></Route>
+        <Route
+          path=":id"
+          element={<DraftUpdate />}
+          loader={draftLoader}
+        ></Route>
+      </Route>
     </Route>,
   ),
 );
