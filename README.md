@@ -10,6 +10,8 @@ The skeleton application is a simple blog with posts and comments.
 
 ## Getting started
 
+Fork the repository and clone it to your computer.
+
 ### Database
 
 There is a script named `setup.sh` and you simply run the script.
