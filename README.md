@@ -1,5 +1,19 @@
 # CDS.Security 2025 - Auth
 
+<!--toc:start-->
+- [CDS.Security 2025 - Auth](#cdssecurity-2025-auth)
+  - [Introduction](#introduction)
+  - [Getting started](#getting-started)
+    - [Database](#database)
+    - [Client](#client)
+    - [Server](#server)
+  - [How to use](#how-to-use)
+    - [Web servers](#web-servers)
+    - [Database](#database)
+    - [Users](#users)
+  - [Exercises](#exercises)
+<!--toc:end-->
+
 ## Introduction
 
 This repository contains a skeleton application and a series of guides on how
