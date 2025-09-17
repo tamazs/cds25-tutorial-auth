@@ -22,6 +22,12 @@ ASP.NET as backend and React as frontend.
 
 The skeleton application is a simple blog with posts and comments.
 
+In real-world systems, I recommend using [ASP.NET
+Identity](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/identity-api-authorization?view=aspnetcore-9.0)
+instead of implementing authentication and sessions manually.
+However, it is important that you know how this stuff works, and I believe in
+learning by coding.
+
 ## Getting started
 
 Fork the repository and clone it to your computer.
