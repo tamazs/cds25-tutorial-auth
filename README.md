@@ -97,7 +97,7 @@ _The project uses [Scalar](https://scalar.com/), which is an alternative to
 
 ### Users
 
-The application ships with some test data including blog posts and a couple of
+The application ships with some test data, including blog posts and a couple of
 users.
 After implementing authentication, you will be able to log-in using these credentials:
 
@@ -110,7 +110,8 @@ After implementing authentication, you will be able to log-in using these creden
 
 ## Exercises
 
-Complete these exercises in order, since each builds on the previous.
+Complete these exercises in order.
+Since each builds on the previous.
 Make a commit each time you complete an exercise.
 
 0. [Authentication](tutorials/00_authentication.md)
