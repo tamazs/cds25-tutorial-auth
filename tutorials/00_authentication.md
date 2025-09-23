@@ -23,7 +23,7 @@
 
 ## Theory
 
-When a user login to a web application they need to prove their identity
+When a user logs-in to a web application they need to prove their identity
 somehow.
 That process is called authentication.
 
@@ -32,35 +32,37 @@ That process is called authentication.
 There are several ways a system can authenticate users.
 These are divided into 3 categories.
 
-- Knowledge: Something the user knows. Examples:
+- **Knowledge:** Something the user knows. Examples:
   - Password
   - Passphrase
   - Personal identification number (PIN)
   - Security question
-- Ownership: Something the user has. Examples:
+- **Ownership:** Something the user has. Examples:
   - ID card
   - Security token
   - Cell phone. Proof via:
     - SMS
     - Authenticator app
-- Inherence: Something the user is or does. Examples:
+- **Inherence:** Something the user is or does. Examples:
   - Fingerprint
   - Face
   - Voice
 
-When factors from more than one of these categories are combined it's called
-multifactor authentication (MFA) and provides stronger guarantees about the
-users' authenticity than just one factor alone.
+When factors are combined it's called multifactor authentication (MFA) and
+provides stronger guarantees about the users' authenticity than just one factor
+alone.
+Preferably combining from multiple categories, such as password (knowledge) and
+authenticator app (ownership).
 
 Not all means of authentication give equal guarantees.
 Some a stronger than others.
-Here are examples of factors that can be weak on some situations.
+Here are examples of factors that can be weak in some situations.
 
 Security questions was once common to use for password reset.
 Examples are, "your moms maiden name", "name of first pet", "street you grew up
 on" etc.
-Questions like these are a fairly weak form of authentication as the answer can
-often be found on social networks.
+Questions like these are a fairly weak form of authentication, since the answer
+can often be found on social media.
 
 SMS code are also sometimes used for authentication.
 It should never be used as a single factor of authentication due to
@@ -74,7 +76,7 @@ You can read more about authentication
 
 ### Good passwords
 
-This continues to be the most widespread way of authenticating users in IT
+Passwords continues to be the most widespread way of authenticating users in IT
 systems.
 There are some issues to it, however.
 Mainly what is known as password-fatigue.
@@ -87,14 +89,15 @@ You have probably learned that a good password should be:
 - numbers
 - and special symbols
 
-So using the following as your password should be really secure, right?
+Based on those rules, a password such as the following should be really secure,
+right?
 
 ```
 qwerty1234!@#$
 ```
 
 Wrong!
-It is not a good password as there is definitely a pattern to it (try to type
+It is not a good password, as there is definitely a pattern to it (try to type
 it).
 Using `Password1!` is also not a good password since it is probably one of the
 most commonly used passwords.
@@ -106,39 +109,36 @@ Long and random to make it hard to guess.
 Any pattern will weaken the password.
 It also needs to be unique.
 Meaning that you must use a different password for each service you sign up to.
-That way if one of the services you are using has bad security and gets
-compromised then you don't leave the attackers open to authenticate as you on
-all the services you are using.
+That way, if one of the services you are using has bad security and gets
+compromised, then attackers can't use it do log in to your other accounts.
 
 How do you remember all those passwords then?
 You don't!
-As in modern day that would be beyond the capabilities of most people.
 What you need to do instead is to use a password manager.
 Password managers provide a secure way to store all your passwords using
 cryptography.
-As a user you only need to authenticate once to unlock your password manager.
-Then you use it access your passwords for all other accounts.
-It means that you will end up only having to remember one password.
-Though you have to guard that one password with your life.
+As a user, you only need to authenticate once to unlock your password manager.
+Then you can access all of your passwords.
+That way, you only need to remember one password for your password manager.
+You should guard that one password with your life.
 
 ### Password hashing
 
 As software developers, we actually don't want to save users passwords anywhere.
 Because if our system gets compromised then attackers could use the passwords
-to compromised accounts on other services for our users, as most people are
-still going to reuse the same couple of passwords.
+to compromise accounts on other services, since most people just reuse the same
+couple of passwords.
 
 Yes, you read correctly.
 We actually don't want to know our users passwords.
-We just want to know that they know the password they have chosen for our
-system to they can prove their identity to us that way.
+We just want to know that they know their password.
 
 Sound like a conundrum, doesn't it?
 How can we tell that a user knows their password without storing their
 password?
-The answer is hashing.
+The answer is **hashing**.
 
-Hashing is a special kind of function.
+A hashing function is a special kind of function.
 We can take some data (such as a password), run it through a hashing function
 to get some other data known as a hash.
 This hash has a couple of interesting properties.
@@ -147,36 +147,34 @@ This hash has a couple of interesting properties.
 2. The same input will always give the same output.
 3. The input can not be determined from the output.
 
-Meaning the only way to guess the password from a hash is simply to try and run
-possible passwords through the same hashing function until you get an output
-that match.
-This process is known as password cracking btw.
+It means that the only way to guess the password from a hash is to try possible
+passwords get a matching output.
+You run your guesses through the hashing function and compares the result.
+This process is known as password cracking.
 
-So we simply store the hash of our users passwords instead of the actual
-password.
-That way, when user wants to authenticate we take their password, run it
-through the hash function, compare with the stored hash.
-If they match, we know that they know their password, without ever having to
-store it.
+In our systems, we simply store the hash of our users passwords instead of the
+actual password.
+When a user wants to authenticate we run the password they type through the
+hash function then compare the output with what we have stored in the database.
+If they match then have successfully authenticated the user.
+All without ever having to store their password.
+Smart right?
 
-We can make it extra difficult for someone trying to crack passwords if we use
-a hashing function that is inherently slow to compute.
-A simple way to make a hashing function slower is just to feed the output into
-the function again many thousands of times.
-Not all hashing functions are equal, as some make cracking more computational
-expensive even on specialize hardware.
+We can make it even more difficult to crack passwords by using a hash function
+that is inherently slow to compute.
+Not all hashing functions are equal, some are more computational expensive than
+others.
+**With password hashing we want to use an algorithm that is slow**!
 
-The password hashing algorithms you should be using (in order of preference)
-is:
+The password hashing algorithms you should use are (in order of preference):
 
 1. [Argon2id](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id)
 2. [scrypt](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#scrypt)
 3. [bcrypt](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#bcrypt)
 4. [PBKDF2](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2)
 
-You should only use an algorithm lower on the list, if no good/trusted
-implementation is available, or otherwise hindered in using an algorithm higher
-on the list.
+You should only use an algorithm lower on the list if there is no good library
+available for the ones higher up.
 
 Each of the listed algorithms have specific parameters that can be used to
 configure how much computation is required for calculating the hash.
@@ -193,35 +191,42 @@ Use trusted libraries instead.
 
 ### Salt and pepper
 
-If several users on the same service use the same password then it would store
-the same hash, right?
-What if multiple services use the same hashing algorithm, wouldn't that mean if
-a user uses the same password they would store the same hash, and by extent,
-wouldn't that mean that if the password is cracked for one service it is
-cracked for all?
+If several users on the same service use the same password then those users
+would have the same hash.
+If multiple services use the same hashing algorithm then users with the same
+password will also have the same hash across services.
 
-Yes, that is absolutely correct.
-To all the questions right above.
+Most users don't use passwords that are long and random enough.
+An attacker could therefore just pre-compute hashes for all passwords up to a
+certain length.
+If password hashes ever gets leaked, they could compare the pre-computed hashes
+with the leaked hashes to uncover the passwords.
 
-The really cool thing is, we have ways around those issues too.
-Simply, flavor the hash with some salt and pepper.
+There is a smart way to counter such attacks.
+The solution is to flavor the hash with some salt and pepper.
 Let me explain.
 
 We will start with **salt**.
 A salt is simply some random bit of data that is combined with password in the
 hashing function.
-If we use different salt for each user then we don't get the same hash if two
-users have the same password.
-However, it also means that we have to store a salt for each user in addition
-to the hash.
-Luckily, many implementations of password hashing algorithms will simply encode
-the hash and a salt into one output string, that we can store in our database.
+We can safely store both salt and hash in database.
+When a user wants to authenticate, we take the salt from database and the
+password they've entered.
+Run it through the hash function and compare it with the hash stored in the
+database.
 
-What if the database gets leaked in some way, then an attacker will in theory
-be able to crack the passwords?
+If we use a different salt for each user then we avoid the issue of having the
+same hash for two users that have the same password.
+
+Many implementations of password hashing algorithms will automatically encode
+both salt and hash into one output string that we can store in the database.
+
+If the database ever gets leaked in some way, then an attacker will in theory
+have all the information needed to initiate a [brute-force
+attack](https://en.wikipedia.org/wiki/Brute-force_attack)?
 Even though in practice it might take trillions of years because we chose a
 slow algorithm.
-There is a solution to that (hypothetical) issue too.
+There is a solution to this issue too.
 In addition to salt we also add another piece of random data called a **pepper**.
 A pepper is unique to the service itself, not to each user on our service.
 And importantly, pepper is not stored in the database itself.
@@ -230,24 +235,27 @@ entire database.
 
 ## Implementation
 
-### Chose hashing library
+### Choosing a hashing library
 
-Making the password hashing code implement the `IPasswordHasher<T>` interface
-makes it easy to swap out one implementation for another.
+Our password hashing code will implement the `IPasswordHasher<T>` interface
+already found in .NET to make it easy to swap out one implementation for
+another.
 It is also great for interoperability with Identity.
 
 _Identity will be explained in a later tutorial._
 
-The big question is what algorithm and what implementation should you use.
+The big question is, what algorithm and what implementation should you use?
 Here are some options I've found by searching for the OWASP recommended
 algorithms on [Nuget](https://www.nuget.org/).
 The libraries shown are those with the highest number of total downloads that
 implements the recommended algorithms.
-Following the logic that if enough people use it then it's probably not a
-complete disaster.
+Following the logic that; if enough people use it then it's probably not a
+complete disaster to use.
 
 Take a look at the options.
-Which one would you pick and why?
+By taking into account ease of implementation, algorithm support and
+popularity.
+Which one would you choose and why?
 
 **NSec.Cryptography**
 
@@ -430,7 +438,8 @@ Create the folder if it doesn't exist already.
 
 It's a good idea to test the implementation.
 
-Start by registering the implementation you've chosen.
+Start by registering the implementation you've chosen with dependency
+injection.
 Open `server/Api/Program.cs` and add the following inside the
 `ConfigureServices` method.
 
@@ -440,8 +449,8 @@ builder.Services.AddScoped<IPasswordHasher<User>, YourPasswordHasher>();
 
 Replace `YourPasswordHasher` with the name of the implementation you've chosen.
 
-Here is a simple test case that hashes a password then verifies the hash.
-Put it in a new file in `Test` project.
+Here is a simple test case, that hashes a password then verifies the hash.
+Put it in a new file in `server/Tests/` folder.
 
 ```cs
 using Api;
