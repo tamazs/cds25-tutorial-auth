@@ -48,6 +48,14 @@ again.
 
 ### Client
 
+Before first run, you need to install dependencies with:
+
+```sh
+npm ci --prefix client
+```
+
+Then start development web server with:
+
 ```sh
 npm run dev --prefix client
 ```
@@ -64,7 +72,7 @@ dotnet watch --project server/Api
 
 The `watch` part makes it hot-reload when you change the code. Not all changes
 works with hot-reloading, in which case you need to manually restart it with
-<kbd>CTRL</kbd>+<kbd>c</kbd> and then re-run the command.
+<kbd>CTRL</kbd>+<kbd>R</kbd>.
 
 ## How to use
 
@@ -73,7 +81,10 @@ works with hot-reloading, in which case you need to manually restart it with
 | Sub-systems | URL |
 | - | - |
 | Client / frontend | <http://localhost:5173/> |
-| Server / backend | <http://localhost:5153> |
+| Server / backend | <http://localhost:5153/scalar/> |
+
+_The project uses [Scalar](https://scalar.com/), which is an alternative to
+[Swagger UI](https://swagger.io/tools/swagger-ui/)._
 
 ### Database
 
