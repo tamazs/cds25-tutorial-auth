@@ -1,7 +1,6 @@
 # Authentication
 
 <!--toc:start-->
-
 - [Authentication](#authentication)
   - [Theory](#theory)
     - [Factors of authentication](#factors-of-authentication)
@@ -9,7 +8,8 @@
     - [Password hashing](#password-hashing)
     - [Salt and pepper](#salt-and-pepper)
   - [Implementation](#implementation)
-    - [Chose hashing library](#chose-hashing-library)
+    - [libraries](#libraries)
+    - [Chose a library](#chose-a-library)
     - [Test password hashing](#test-password-hashing)
     - [Business logic](#business-logic)
       - [Testing](#testing)
@@ -19,7 +19,7 @@
     - [Password recovery](#password-recovery)
     - [Multifactor authentication (MFA)](#multifactor-authentication-mfa)
   - [Conclusion](#conclusion)
-  <!--toc:end-->
+<!--toc:end-->
 
 ## Theory
 
@@ -235,7 +235,7 @@ entire database.
 
 ## Implementation
 
-### Choosing a hashing library
+### libraries
 
 Our password hashing code will implement the `IPasswordHasher<T>` interface
 already found in .NET to make it easy to swap out one implementation for
@@ -252,10 +252,7 @@ implements the recommended algorithms.
 Following the logic that; if enough people use it then it's probably not a
 complete disaster to use.
 
-Take a look at the options.
-By taking into account ease of implementation, algorithm support and
-popularity.
-Which one would you choose and why?
+Here are the options, so you can evaluate.
 
 **NSec.Cryptography**
 
@@ -266,7 +263,7 @@ Which one would you choose and why?
 Install with:
 
 ```sh
-dotnet add package NSec.Cryptography
+dotnet add server/Api package NSec.Cryptography
 ```
 
 Implementation:
@@ -324,7 +321,7 @@ public class NSecArgon2idPasswordHasher : IPasswordHasher<User>
 Install with:
 
 ```sh
-dotnet add package Konscious.Security.Cryptography.Argon2
+dotnet add server/Api package Konscious.Security.Cryptography.Argon2
 ```
 
 Implementation:
@@ -384,7 +381,7 @@ public class KonciousArgon2idPasswordHasher : IPasswordHasher<User>
 Install with:
 
 ```sh
-dotnet add package BCrypt.Net-Next
+dotnet add server/Api package BCrypt.Net-Next
 ```
 
 Implementation:
@@ -431,10 +428,17 @@ Implementation:
 There is already an Implementation.
 Just use the `PasswordHasher<User>` class.
 
+### Chose a library
+
+By taking into account ease of implementation, algorithm support and
+popularity.
+Which of the above listed libraries would you choose and why?
+
 ### Test password hashing
 
-Add the implementation you've chosen to a file in `server/Api/Security` folder.
-Create the folder if it doesn't exist already.
+Add the Nuget package library you've chosen.
+Then add the implementation to a file in `server/Api/Security` folder.
+Create the folder if it doesn't already exist.
 
 It's a good idea to test the implementation.
 
@@ -447,7 +451,8 @@ Open `server/Api/Program.cs` and add the following inside the
 builder.Services.AddScoped<IPasswordHasher<User>, YourPasswordHasher>();
 ```
 
-Replace `YourPasswordHasher` with the name of the implementation you've chosen.
+Replace `YourPasswordHasher` with the name of the class implementation you've
+chosen.
 
 Here is a simple test case, that hashes a password then verifies the hash.
 Put it in a new file in `server/Tests/` folder.
@@ -487,13 +492,19 @@ public class PasswordHasherTest
 }
 ```
 
+You should see if the test passes by running:
+
+```sh
+dotnet test
+```
+
 ### Business logic
 
 The business logic for authentication should be implemented in a service.
-Controllers are only there to provide a web API on top.
+Controllers are only there to provide an API for the client app.
 
-However, before the business logic can be implemented, we need some place to
-store the hash.
+We need somewhere to store the hash before the business logic can be
+implemented.
 
 Open the entity representing a user found in
 `server/DataAccess/Entities/User.cs`.
@@ -508,7 +519,8 @@ public string PasswordHash { get; set; } = null!;
 The `[JsonIgnore]` part is so password hash doesn't get exposed by accident.
 It tells the JSON serializer to ignore the field.
 
-Uncomment the lines including `PasswordHasher` in `server/Api/Etc/DbSeeder.cs`.
+Uncomment all lines including the word `PasswordHash` in
+`server/Api/Etc/DbSeeder.cs`.
 `DbSeeder` is what creates the test data when you run the `setup.sh` script.
 Adding a password hash to the users are going to be useful later on when
 testing the business logic.
@@ -553,36 +565,47 @@ You should make an implementation of the interface following these requirements.
 **Authentication()**
 
 - Lookup the user by `request.Email` (use `IRepository<User>.Query()`).
-- Verify that `request.Password` matches the hashed password.
-- If you get `PasswordVerificationResult.Success` then map the `User` entity to.
-  `AuthUserInfo` DTO and return it.
+- Use `IPasswordHasher` to verify that `request.Password` matches the hashed
+password.
+- If you get `PasswordVerificationResult.Success` then create an instance of
+the DTO `AuthUserInfo` from the `User` entity, and return it.
 - In all other cases throw a `AuthenticationException`.
 
 _You don't want to disclose to the client why authentication failed.
 Just whether it was successful.
-Anymore could give insights to an attacker.
+As any additional could give insights to an attacker.
 Log why authentication failed instead, so you can still debug any issues._
 
 **Register()**
 
-- Make sure that a user with `request.email` doesn't exist already.
+- Make sure that no user with the given email (`request.email`) exist already.
   - Throw a `ValidationException` if the email is already in use.
-- Map the `RegisterRequest` DTO to an instance of `User` entity.
+- Create an instance of `User` entity from `RegisterRequest` DTO.
+  - Role should be `Role.Reader`
 - Hash `request.Password` and assign it to `PasswordHash` field of the `User` entity.
 - Add the `User` to `IRepository<User>`
 - Map the returned `User` entity to `AuthUserInfo`
 - Return the `AuthUserInfo`
 
+When you are done with the implementation, make sure you remember to register
+it for dependency injection.
+In `Program.cs` under `ConfigureServices()` add:
+
+```cs
+builder.Services.AddScoped<IAuthService, AuthService>();
+```
+
 #### Testing
 
 Production ready code should always have automated tests.
-And we will write it as a unit test.
+So we are going to write a unit test for `AuthService`.
 
 Notice the service depends on `IPasswordHasher<User>` and `IRepository<User>`.
 We need a substitute (aka test double) for those, so we can keep our test to
 just a unit.
-One could use a mocking framework like [Moq](https://github.com/devlooped/moq)
-or write the test double by hand. Here we'll write it by hand.
+One way of creating test doubles is with a mocking framework like
+[Moq](https://github.com/devlooped/moq).
+Instead of adding new libraries, we'll just write our test doubles by hand.
 
 Create file `server/Tests/Helpers/FakePasswordHasher.cs` with:
 
@@ -607,7 +630,14 @@ class FakePasswordHasher<T> : IPasswordHasher<T>
 }
 ```
 
-And `server/Tests/Helpers/InMemoryRepository.cs` with:
+Should be needless to say that `FakePasswordHasher` should never be used in
+production.
+Instead of calculating an actual hash, we will just reverse the string.
+We can take shortcuts when writing test doubles as long as it doesn't impact
+the unit we are testing.
+
+Next, we need a test double for `IRepository`.
+Add `server/Tests/Helpers/InMemoryRepository.cs` with:
 
 ```cs
 using DataAccess.Repositories;
@@ -641,17 +671,11 @@ class InMemoryRespository<T>(IList<T> entities) : IRepository<T>
 }
 ```
 
-Should be needless to say that `FakePasswordHasher` should never be used in
-production.
-Instead of calculating an actual hash then it just reverses the string as we
-just need it to return some value that is derived from the given password.
-
 `InMemoryRespository` is an implementation of `IRepository` that doesn't touch
 a database.
-Instead, it just keeps a list in memory which is much faster.
-It does something a bit hacky as it assumes what the entity type (such as
-`User`) has a `Id` field.
-It does that by casting to `dynamic` which doesn't get type checked by the
+Instead, it just keeps entities in a list in-memory - which is much faster.
+It does something a bit hacky, as it assumes all entities has a `Id` field.
+It does that by casting to `dynamic` so doesn't get type checked by the
 compiler.
 
 We can then write a unit test like this:
@@ -733,21 +757,19 @@ public class AuthServiceTest
 }
 ```
 
-When you are done with the implementation, make sure you remember to register
-it for dependency injection.
-In `Program.cs` under `ConfigureServices()` add:
+You should test your implementation of `AuthService` by running:
 
-```cs
-builder.Services.AddScoped<IAuthService, AuthService>();
+```sh
+dotnet test
 ```
 
 ### Web API
 
-Now that the business logic is implemented it's simple to add a web API layer
-on top.
+Now that the business logic is implemented, it will be simple to add a web API
+layer on top.
 The web API that the client will interact with is defined in a controller.
-Controllers shouldn't contain business logic, the just define the API for HTTP
-requests.
+Controllers shouldn't contain business logic.
+They should just define the API for HTTP requests.
 
 Here is a controller implementation you can use.
 
@@ -812,10 +834,10 @@ Open <http://localhost:5153/scalar/>
 
 [🎬 Video: Test login](./assets/manual-test-login.mp4)
 
-Manually testing is going to be hindering as a project increase in scope, so it
-is better have automated test from the get go.
+Manually testing will become cumbersome as a project in size.
+So it is better have automated test from the get go.
 
-Here is a quick manual test following the [Arrange, Act, Assert
+Here is an automated test for it, following the [Arrange, Act, Assert
 pattern](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best-practices#arrange-your-tests).
 
 ```cs
@@ -983,34 +1005,40 @@ This time we are using the mocking framework
 `AuthService`.
 The intent of this test is solely to verify that the controller behaves as
 expected at the HTTP level.
-It doesn't touch the database, nor any business logic.
+It doesn't touch the database, nor any business logic since they are already
+covered by other tests.
 
 It is important to both test success and failure conditions.
-Further, it also tests that the model is being validated.
-ASP.NET automatically validates models before an action is executed.
+It also tests that the model is being validated.
+ASP.NET will automatically validate models before an action is executed.
 However, it is very easy to forget adding data validation attributes to DTOs.
+So we still have a test for it.
 
 There is one failing test, that is `Register_ValidationWithInvalidEmail`.
 It returns `InternalServerError` instead of the expected `BadRequeset`.
-We expect that validation should fail with something that is obviously not a
-valid email.
+We expect that validation should fail when given something that is obviously
+not a valid email.
 
 Go to definition of `RegisterRequest` and add the appropriate validation
 attribute to the `Email` field.
 See [list of validation
 attributes](https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.dataannotations?view=net-9.0).
 
-In addition to the tests included in this article you its also good to include
+In addition to the tests included in this article it's also good to include
 either end-to-end tests or integration tests in your testing strategy.
 However, that is outside the scope of this guide.
 
 ## Known limitations
 
+We have implemented a simple authentication scheme.
+It is a good start, however for a production system we would also have to
+implement password recovery and multifactor authentication.
+
 #### Password recovery
 
 What if the user forgets their password?
 It is common practice to send an email with a reset link.
-Such a link must include reset token or a long one-time-password.
+Such a link must include either a reset token or a long one-time-password.
 This is used to prove that the reset request originated from that specific
 email.
 It is important because we don't want to let people be able to reset other peoples
@@ -1018,28 +1046,31 @@ passwords as that could easily lead to account takeover.
 Also, we haven't actually verified that the user has possession over the email
 address that was given during registration.
 Maybe they made a typo, in which case we could be giving a random person access
-to their account when a password reset is initiated.
+to the account when a password reset is initiated.
 
 #### Multifactor authentication (MFA)
 
 Humans are bad a remembering passwords that are secure (long and random).
-So they often work around this issue by picking passwords that are memorable to
-them but less secure.
-Even with good passwords there is the possibility that it could be compromised.
-Maybe the user got tricked into revealing their passwords, such as from a scam
-email.
+So they often find a workaround by picking passwords that are easy to remember
+and easy guess.
+Even with good passwords, there is still the possibility that account could be
+compromised.
+Maybe the user got tricked by a phishing email.
+
 Because of this, it is a good idea to implement MFA.
 MFA is a must for high secure applications.
 
 ## Conclusion
 
 We have now made an implementation for register and login.
-That is registering and identity for the app and verifying the identity (aka
+That is registering an identity for the app and verifying the identity (aka
 authentication).
-Tests have been written to give us reasonable confidence that the implantation
-is correct, though we skipped out on integration test as that is too broad a
-topic to also cover in this guide.
+Tests have been written to give us confidence that the implantation works as
+expected.
+We have skipped out on integration test because that would make the guide even
+longer.
 
-Save your work for the next part where we look at how to implement sessions.
+Commit your work, so you have it for the next exercise.
+It in we look at how to implement sessions.
 
 [Reference solution](https://github.com/rpede/cds25-tutorial-auth/tree/00-authentication)
