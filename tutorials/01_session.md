@@ -21,16 +21,18 @@
 
 ## Theory
 
-In the last part we have implemented authentication.
-Meaning the user can prove their identity to the server.
+In the last part we implemented authentication.
+Meaning, the user can prove their identity to the server.
 They prove themselves by presenting a password that the server is able to
-verify without actually storing their password anywhere.
+verify.
+It does it without actually storing the password anywhere.
 The assumption is that only the user themselves knows their password.
 
-But what about the next request?
-How does the server know from whom it originated?
-Do we need to authenticate the user on each request, so they would have to
-enter their password each time they click on something on the web app?
+But what about the next HTTP request?
+How can the server tell from whom it originated?
+Do we need to authenticate the user on each request?
+That would require them to enter their password each time they click on
+something on the web app.
 
 What we need is some sort of prof that consecutive requests originated from the
 same web browser instance from which the user authenticated.
@@ -39,7 +41,7 @@ We can think of a session as authenticating the request.
 Meaning that it originates from the same browser window from where the user had
 entered their credentials.
 
-There are broadly speaking two common ways authenticating a request.
+Broadly speaking, there are two common ways authenticating a request.
 Aka establishing a session.
 
 1. Session ID
@@ -47,10 +49,10 @@ Aka establishing a session.
 
 A **session ID** is an identifier that is included in all requests within the session.
 The server will correlate this ID with information about the authenticated user.
-To make it secure it is important the ID is extremely difficult to guess correctly.
+To make it secure, it is important the ID is extremely difficult to guess.
 You see, sometimes we use auto-incremented numbers as ID in the database.
-That wouldn't work as a proof of anything, because it is very easy previous and
-next, previous or any other ID for the matter.
+That wouldn't work as a proof of anything.
+Because it is very easy to guess the previous and next ID.
 For session ID's to be secure they need to be long and random.
 They don't need to be memorable to humans.
 In fact humans shouldn't even have to see them.
@@ -60,23 +62,25 @@ can work as session ID.
 Generally a session ID is 64 or more random bits encoded into printable
 characters somehow. Common encodings are
 [HEX](https://en.wikipedia.org/wiki/Hexadecimal) and
-[Base64](https://en.wikipedia.org/wiki/Base64), but other schemes can also be
-used.
-A new random session ID is used for each login.
-Session IDs a commonly delivered as a cookie.
-Cookies are simple small pieces of text data that the server can instruct the
-browser to automatically include on subsequent requests.
-A session ID can also be delivered in an HTTP header managed by client-side
+[Base64](https://en.wikipedia.org/wiki/Base64).
+But other schemes can also be used.
+A new random session ID is created for each login.
+Session IDs are commonly transmitted in the form of a cookie.
+Cookies are simply small pieces of text data that the server can instruct the
+browser to include on subsequent requests.
+There is no client side code required to use cookies as it is all handled by
+server and browser.
+A session ID can also be delivered as an HTTP header managed by client-side
 code.
 
 A **Self-contained token** is a piece of data that encodes information about
 the user directly in such a way that it can't be tempered with.
 JWT is the de facto standard for such tokens.
-JWT's are often delivered in an HTTP header manages by client-side code.
-However, it can also be delivered as a cookie.
+JWT's are often delivered as an HTTP header manages by client-side code.
+But can also be delivered as a cookie.
 
-So we can use session ID or Self-contained token (such as JWT) either delivered
-as cookie or header.
+We can use session ID or Self-contained token (such as JWT) to manage the session.
+Both can either be delivered as cookie or header.
 To simplify things I will limit my further explanation to session ID delivered
 as cookie and JWT delivered in HTTP header.
 
@@ -112,7 +116,7 @@ match and the manipulation can therefore be detected.
 This protection mechanism relies on only the server knowing the secret used to
 generate the signature.
 It is important to be aware that they are not encrypted.
-A JWT can easily be decoded and read, but it can't be tampered with without
+A JWT can easily be decoded and read, but it can not be tampered with without
 breaking the signature.
 
 When using JWTs.
@@ -144,22 +148,22 @@ Whereas bearer tokens are set by JavaScript in the client app.
 Each approach has its pros and cons.
 
 In this application, the built-in cookie mechanism would be just fine.
-However, since using JWT as bearer tokens are so widely used these days, you
-will need to learn how they work and how to use them.
+However, since using JWT as bearer tokens are so common these days, you will
+need to learn how they work and how to use them.
 
-Here are a comparison between the two approaches:
+Here is a comparison between the two approaches:
 
 - **Cookies** are automatically managed by the browser.
 - **Bearer tokens** are managed by client-side code.
   Meaning that the front-end developer is responsible managing the token.
-- **Cookie** can if misconfigured be susceptible to
-  [CSRF](https://en.wikipedia.org/wiki/Cross-site_request_forgery) attacks.
+- **Cookie** can (if misconfigured) be susceptible to
+[CSRF](https://en.wikipedia.org/wiki/Cross-site_request_forgery) attacks.
 - **Bearer tokens** can be stolen if the app is vulnerable to
   [XSS](https://en.wikipedia.org/wiki/Cross-site_scripting).
 - **Bearer tokens** allow for cross-origin authorization.
   Cookies don't.
-- **Bearer tokens** better suited for native applications such as desktop and
-  mobile apps.
+- **Bearer tokens** well suited for native applications such as desktop and
+mobile apps.
 
 [Advanced reading](https://auth0.com/blog/cookies-tokens-jwt-the-aspnet-core-identity-dilemma/)
 
@@ -315,37 +319,43 @@ The `CreateToken` method is used to issue new JWTs.
 The secret is retrieved from the configuration system where it is typically
 Base64 encoded.
 It is important that you don't use the same secret in development as in production.
-It is very important that you do **NOT** commit the JWT secret to GIT.
+It is very important that you do **NOT** commit the production JWT secret to
+GIT.
 If someone possesses the secret then they can impersonate any user in the app.
 
-`Subject` is the payload of the token.
 We can store whatever information we want in the claims.
 But we should stay away from storing secret information such as password in it,
 since it isn't encrypted.
 Most applications will store user ID and roles as claims.
-
+`Subject` is the payload of the token.
 `Expires` is when the token is valid until.
-This is for security reasons.
-If someone malicious manage to steal the token it would be nice, if it had
-already expired when they try to use it.
+For security reasons, if someone malicious manage to steal the token we want it
+to expire quickly to minimize the damage.
 
-### Issue JWT on login
+Don't forget to wire the service up for dependency injection by adding the following line to `Program.cs`:
+
+```cs
+builder.Services.AddScoped<ITokenService, JwtService>();
+```
+
+### Issue a JWT on login
 
 Let's update `AuthController` to return a JWT on login.
-Replace the login method with:
+Add `ITokenService tokenService` to the constructor parameters of the class.
+Then replace the login method with:
 
 ```cs
 [HttpPost]
 [Route("login")]
 public async Task<LoginResponse> Login([FromBody] LoginRequest request)
 {
-    var userInfo = authService.Authenticate(request);
+    var userInfo = service.Authenticate(request);
     var token = tokenService.CreateToken(userInfo);
     return new LoginResponse(token);
 }
 ```
 
-Then we need to update the DTO with a field for JWT such that it can be
+Then we need to update the DTO with a field for JWT, such that it can be
 returned to the client.
 
 Open `server/Api/Models/Dtos/Responses/AuthResponses.cs` and change
@@ -356,19 +366,25 @@ public record LoginResponse(string jwt);
 ```
 
 Try it!
+Run the application.
 Open <http://localhost:5153/scalar> and login.
-You can paste the JWT into <jwt.io> to verify its content.
+You can paste the JWT into [jwt.io](https://jwt.io) to verify its content.
+
+You can find a list of users in `README.md`.
+
+> [!TIP]
+> You can reset the database with the `setup.sh` script.
+> In case you forgot the password.
 
 ### Verify JWT on incoming requests
 
-We need to tell ASP.NET to look for a JWT Bearer on incoming request, such
-that it can verify and decode the token, so we tell who had logged in.
+We need to tell ASP.NET to look for a JWT Bearer on incoming request, so it can
+verify and decode the token, in order to check who is logged in.
 To do this we need to configure it in [Program.cs](server/Api/Program.cs).
 Inside `ConfigureServices()` method, add the following lines after all the `builder.Services.AddScoped...`.
 
 ```cs
 // Authentication & Authorization
-builder.Services.AddScoped<ITokenService, JwtService>();
 builder
     .Services.AddAuthentication(options =>
     {
@@ -414,36 +430,58 @@ In `server/Api/Controllers/AuthController.cs`, replace `UserInfo` method with th
 [Route("userinfo")]
 public async Task<AuthUserInfo?> UserInfo()
 {
-    return authService.GetUserInfo(User);
+    return service.GetUserInfo(User);
 }
 ```
+
+Then open `server/Api/Services/AuthService.cs` and add the following to `IAuthService` interface:
+
+```cs
+AuthUserInfo? GetUserInfo(ClaimsPrincipal principal);
+```
+
+And this to `AuthService` class:
+
+```cs
+public AuthUserInfo? GetUserInfo(ClaimsPrincipal principal)
+{
+    var userId = principal.GetUserId();
+    return _userRepository
+        .Query()
+        .Where(user => user.Id == userId)
+        .SingleOrDefault()
+        ?.ToDto();
+}
+```
+
+That's it for the server.
 
 ## Client implementation
 
 When the client has called the login endpoint with correct credentials, it will
 receive a token in response body.
-The client needs to hold on to the token, so it can be attached to upcoming
+The client needs to hold on to the token, so it can be in a header on future
 requests.
 Otherwise, the user would have to re-authenticate themselves all the time,
 which would be silly.
 
 Cookies are automatically included in requests by the browser.
-But, with bearer tokens, we need to write code to include them.
+However, with bearer tokens, we need to write code to include them.
 
 ### Token storage
 
-We need to be able to access the token across components, because we have
-different pages that make requests to the server.
+We need to be able to access the token across components.
+Because we have different pages that make requests to the server.
 They all need to include the token in their requests.
 
-You could just use an atom from Jotai.
-But, then the user would have to re-authenticate if they reload the page or
-open it in a new tab.
+You could use just a normal atom from Jotai to store the token.
+But then the user would have to re-authenticate if they reload the page or open
+it in a new tab.
 Instead of using a plain atom, we can use an
 [atomWithStorage](https://jotai.org/docs/utilities/storage).
 
-A `atomWithStorage` stores a value in the browser meaning it can persist across
-multiple tabs.
+A `atomWithStorage` stores a value in the browser, meaning it can persist
+across multiple tabs.
 Each tab you open (even if the URL is the same) is a new instance of the
 client.
 
@@ -458,12 +496,11 @@ The difference is that:
 - **localStorage** is only cleared when user clears the browser data.
 
 A `atomWithStorage` can use either storage mechanism.
-Which one to use depends on your security requirements.
+Which one you should use depends on your security requirements.
 For high-secure applications such as online-banking, you defiantly want to go
 with `sessionStorage`.
-If it is a hard requirement that you need to keep the user authenticated for
-longer.
-Then you could go with `localStorage`.
+If you need to keep the user authenticated for longer, then go with
+`localStorage`.
 
 Let's get started on the implementation.
 
@@ -498,7 +535,7 @@ export const userInfoAtom = atom(async (get) => {
 
 `tokenStorage` defines what storage mechanism to use.
 In this case `sessionStorage`.
-`tokenAtom` can be used like any other atom, but it persists the token in
+`tokenAtom` can be used like any other atom, but it will persists the token in
 `tokenStorage` backed by `sessionStorage`.
 
 We also have a `userInfoAtom` atom, which when a token is present will fetch
@@ -554,8 +591,13 @@ This works because rest of the client app already uses the exports from
 `api-clients.ts` instead of the generated clients from
 `client/src/models/generated-client.ts` directly.
 
+> [!CAUTION]
+> When using Bearer tokens in your own projects, it is important that the token
+> is only ever included in calls to your own back-end.
+> It should NEVER be included in calls to third party APIs.
+
 Now that we got the low-level token plumbing in place then we can use it in a
-hook proving nice interface for our React components.
+hook providing nice interface for use in our React components.
 
 Replace `client/src/hooks/auth.tsx` with:
 
@@ -614,71 +656,76 @@ Inspect the page and see if you can spot the JWT.
 
 ![JWT in header](./assets/jwt-in-header.png)
 
+The app now supports authentication and can maintain session across requests.
+
 ## Limitations
 
 ### Token expiration
 
 The JWT will expire at some point.
-When that happens the user needs to re-authenticate themselves.
-It doesn't matter whether they are using the app or not at the moment it
+When that happens the user needs will need to re-authenticate.
+It doesn't matter whether they are using the app or not, at the moment it
 expires.
 It can be a bad user experience.
-Imagine someone is writing a long blog post, when they have finally done and
-ready to submit they can an error that they are not authenticated.
+Imagine someone is writing a long blog post.
+When they have finally done and ready to submit they can an error because the
+token has expired, so they are no longer authenticated.
 
 To work around this issue, many systems will have a second token called a
 refresh token.
-Upon login the client receives to tokens.
-One with a short expiration called an access token, that is used to
-authenticate requests.
-Another token called a refresh token with a longer lifespan that can be used to
-retrieve a new access token.
-Logic needs to be implemented in the client such that it will use refresh token
-to get a new access token when the access token is near its expiration.
+Upon login the client receives two tokens.
+One with a short expiration called an access token.
+It is used to authenticate requests.
+Another token called a refresh token with a longer lifespan.
+The refresh token can be used to retrieve a new access token.
+It requires more logic in the client so that the refresh token will be used to
+get a new access token when it is near its expiration.
 
 Of course, just making a token that lasts forever would also solve the issue.
-However, that is terrible practice as it would mean that a stolen token can be
-abused forever.
-Short expiration is more secure, but can also lead to user to have to
-re-authenticate more often.
-There is a trade-off.
+However, that is a terrible practice, as it means that the token can be abused
+forever if stolen.
+Short expiration is more secure, but requires the user to re-authenticate more
+often.
+It's a trade-off.
 
 ### Cross Site Scripting (XSS)
 
 A token stored in `sessionStorage` or `localStorage` can be stolen if the site
 is vulnerable to [XSS](https://owasp.org/www-community/attacks/xss/).
-It is a type of attack where the attacker is able to inject JavaScript into the
+XSS is a type of attack where an attacker is able to inject JavaScript into the
 page, such that it will be executed within the context of the page on the
 victims' browser.
-That is because JavaScript on a page can just read from `sessionStorage` or
-`localStorage`.
+It can be huge problem because JavaScript can just read from `sessionStorage`
+or `localStorage`.
 
-This blog application happens to use
-[Markdown](https://en.wikipedia.org/wiki/Markdown) to provide rich-text editing
-for blog posts.
-Rich-text means adding stuff like headers, bold-text, links etc. to the text.
-Different Markdown libraries have been vulnerable to XSS in the past.
+_JS on one site can not read session or local storage on a different site.
+The browser isolates the storage to a given site._
 
+This blog application uses [Markdown](https://en.wikipedia.org/wiki/Markdown)
+to provide rich-text editing for blog posts.
+Rich-text allows for adding stuff like headers, bold-text, links etc. to the
+text.
+Many Markdown libraries have been vulnerable to XSS in the past.
 If you are curious on how these kinds of vulnerabilities work, then you can
 read this [Exploiting XSS via
 Markdown](https://medium.com/taptuit/exploiting-xss-via-markdown-72a61e774bf8)
 blog post.
 
-Cookies on the other hand, if set with the
-[HttpOnly](https://owasp.org/www-community/HttpOnly) flag prevents any
+Cookies on the other hand (assuming they have the
+[HttpOnly](https://owasp.org/www-community/HttpOnly) flag set) prevents any
 JavaScript from reading the value, thereby preventing it from being stolen by
 XSS.
 
 A session cookie configured with `Secure`, `HttpOnly` and `SameSite=strict` is
-more secure than bearer tokens.
+generally more secure than bearer tokens.
 See [Secure cookie
 configuration](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/Cookies).
 
 ## Conclusion
 
-Using JWT bearer is a bit more involved than cookies, as you can see.
-But, they are getting popular.
-So it is important to know how they work.
+Using JWT bearer is a bit more involved than cookies.
+But they are getting popular, so it is important that you understand how they
+work.
 
 A cookie is only going to be included for the same site for which it was set.
 
