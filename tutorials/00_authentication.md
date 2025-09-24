@@ -420,7 +420,7 @@ public class BcryptPasswordHasher : IPasswordHasher<User>
 Installed with:
 
 ```sh
-dotnet add package Microsoft.AspNetCore.Identity
+dotnet add server/Api package Microsoft.AspNetCore.Identity
 ```
 
 Implementation:
