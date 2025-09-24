@@ -13,8 +13,3 @@ public class UnauthorizedError(string type) : AppError($"Operation not authorize
 public class ForbiddenError() : AppError("Forbiddden!") { }
 
 public class AuthenticationError() : AppError("Unable to authenticate!") { }
-
-public class ValidationError(IDictionary<string, string[]> Errors) : AppError("Validation failed!")
-{
-    public IDictionary<string, string[]> Errors { get; } = Errors;
-}

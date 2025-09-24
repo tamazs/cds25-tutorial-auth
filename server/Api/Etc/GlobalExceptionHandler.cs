@@ -19,10 +19,11 @@ internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log
         var status = exception switch
         {
             ValidationException => StatusCodes.Status400BadRequest,
-            AuthenticationException => StatusCodes.Status401Unauthorized,
-            UnauthorizedAccessException => StatusCodes.Status403Forbidden,
+            AuthenticationError => StatusCodes.Status401Unauthorized,
+            ForbiddenError => StatusCodes.Status403Forbidden,
             _ => StatusCodes.Status500InternalServerError,
         };
+        httpContext.Response.StatusCode = status;
         if (status != StatusCodes.Status500InternalServerError)
         {
             var problemDetails = new ProblemDetails
@@ -33,7 +34,6 @@ internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log
             };
             await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
         }
-        httpContext.Response.StatusCode = status;
 
         return true;
     }

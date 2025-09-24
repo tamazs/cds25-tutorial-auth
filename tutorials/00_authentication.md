@@ -682,6 +682,7 @@ We can then write a unit test like this:
 
 ```cs
 using System.Security.Authentication;
+using Api.Etc;
 using Api.Models.Dtos.Requests;
 using Api.Services;
 using DataAccess.Entities;
@@ -691,7 +692,7 @@ using Microsoft.Extensions.Logging;
 using Tests.Helpers;
 using TUnit.Assertions.AssertConditions.Throws;
 
-namespace Tests.Services;
+namespace Tests.Security;
 
 public class AuthServiceTest
 {
@@ -744,7 +745,7 @@ public class AuthServiceTest
     {
         await Assert
             .That(() => sut.Authenticate(new LoginRequest("invalid", "fakepassword")))
-            .Throws<AuthenticationException>();
+            .Throws<AuthenticationError>();
     }
 
     [Test]
@@ -752,7 +753,7 @@ public class AuthServiceTest
     {
         await Assert
             .That(() => sut.Authenticate(new LoginRequest("user1@example.com", "invalid")))
-            .Throws<AuthenticationException>();
+            .Throws<AuthenticationError>();
     }
 }
 ```
@@ -844,8 +845,8 @@ pattern](https://learn.microsoft.com/en-us/dotnet/core/testing/unit-testing-best
 using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Net.Http.Json;
-using System.Security.Authentication;
 using Api;
+using Api.Etc;
 using Api.Models.Dtos.Requests;
 using Api.Models.Dtos.Responses;
 using Api.Services;
@@ -871,7 +872,7 @@ public class AuthControllerTest
         // Arrange
         var mock = new Mock<IAuthService>();
         var requestBody = new LoginRequest("", "");
-        using var factory = CreateWebApplicationFactory(mock.Object);
+        await using var factory = CreateWebApplicationFactory(mock.Object);
         var client = factory.CreateClient();
 
         // Act
@@ -889,7 +890,7 @@ public class AuthControllerTest
         var requestBody = new LoginRequest("user@example.com", "secret");
         mock.Setup(x => x.Authenticate(requestBody))
             .Returns(new AuthUserInfo(Id: "1", UserName: "User1", Role: Role.Reader));
-        using var factory = CreateWebApplicationFactory(mock.Object);
+        await using var factory = CreateWebApplicationFactory(mock.Object);
         var client = factory.CreateClient();
 
         // Act
@@ -905,8 +906,8 @@ public class AuthControllerTest
         // Arrange
         var mock = new Mock<IAuthService>();
         var requestBody = new LoginRequest("user@example.com", "secret");
-        mock.Setup(x => x.Authenticate(requestBody)).Throws<AuthenticationException>();
-        using var factory = CreateWebApplicationFactory(mock.Object);
+        mock.Setup(x => x.Authenticate(requestBody)).Throws<AuthenticationError>();
+        await using var factory = CreateWebApplicationFactory(mock.Object);
         var client = factory.CreateClient();
 
         // Act
@@ -922,7 +923,7 @@ public class AuthControllerTest
         // Arrange
         var mock = new Mock<IAuthService>();
         var requestBody = new RegisterRequest(Email: "invalid_email", "", "", "");
-        using var factory = CreateWebApplicationFactory(mock.Object);
+        await using var factory = CreateWebApplicationFactory(mock.Object);
         var client = factory.CreateClient();
 
         // Act
@@ -943,7 +944,7 @@ public class AuthControllerTest
             Password: "secret",
             Name: "User"
         );
-        using var factory = CreateWebApplicationFactory(mock.Object);
+        await using var factory = CreateWebApplicationFactory(mock.Object);
         var client = factory.CreateClient();
 
         // Act
@@ -966,7 +967,7 @@ public class AuthControllerTest
         );
         mock.Setup(x => x.Register(requestBody))
             .ReturnsAsync(new AuthUserInfo(Id: "1", UserName: "User1", Role: Role.Reader));
-        using var factory = CreateWebApplicationFactory(mock.Object);
+        await using var factory = CreateWebApplicationFactory(mock.Object);
         var client = factory.CreateClient();
 
         // Act
@@ -988,7 +989,7 @@ public class AuthControllerTest
             Name: "User"
         );
         mock.Setup(x => x.Register(requestBody)).Throws<ValidationException>();
-        using var factory = CreateWebApplicationFactory(mock.Object);
+        await using var factory = CreateWebApplicationFactory(mock.Object);
         var client = factory.CreateClient();
 
         // Act
@@ -1019,10 +1020,13 @@ It returns `InternalServerError` instead of the expected `BadRequeset`.
 We expect that validation should fail when given something that is obviously
 not a valid email.
 
-Go to definition of `RegisterRequest` and add the appropriate validation
-attribute to the `Email` field.
-See [list of validation
-attributes](https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.dataannotations?view=net-9.0).
+ASP.NET uses annotation attributes to specify validations rules for fields.
+Go `server/Api/Models/Dtos/Requests/AuthRequests.cs` and add `[EmailAddress]`
+to the email fields.
+
+A full list of validation annotations can be found in documentation for
+[System.ComponentModel.DataAnnotations
+Namespace](https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.dataannotations?view=net-9.0).
 
 In addition to the tests included in this article it's also good to include
 either end-to-end tests or integration tests in your testing strategy.
