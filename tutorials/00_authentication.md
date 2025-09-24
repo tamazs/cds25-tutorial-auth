@@ -569,7 +569,7 @@ You should make an implementation of the interface following these requirements.
 password.
 - If you get `PasswordVerificationResult.Success` then create an instance of
 the DTO `AuthUserInfo` from the `User` entity, and return it.
-- In all other cases throw a `AuthenticationException`.
+- In all other cases throw a `AuthenticationError`.
 
 _You don't want to disclose to the client why authentication failed.
 Just whether it was successful.
