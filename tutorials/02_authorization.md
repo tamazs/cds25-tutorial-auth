@@ -15,13 +15,13 @@
 ## Theory
 
 Authentication on its own does not make a system secure.
-When we have authenticated a user it just means that we know their identity.
+When we authenticate a user it just means that verify their identity.
 
 Identity is not part of the CIA-triad.
 
 ![CIA triad](./assets/cia-triad.drawio.png)
 
-But confidentiality and integrity is.
+However, confidentiality and integrity is.
 Both goals have to do with authorization.
 To determine whether someone (or something) is authorized to do something, we
 need to have established identity.
@@ -35,10 +35,10 @@ We need authentication to determine authorization.
 
 <small>[Source](https://en.wikipedia.org/wiki/Information_security#Basic_principles)</small>
 
-Authorization is simply policies on who can do what.
+Authorization - put simply - is policies on who can do what.
 
 There are many ways such policies can be implemented.
-Here, I will cover a couple techniques that are relatively simple to understand.
+Here I will cover a couple techniques that are relatively simple to understand.
 With these we are able to cover a broad spectrum of use-cases for distributed
 systems.
 The policies I will cover are:
@@ -54,7 +54,7 @@ The policies I will cover are:
 In lack of a better name.
 It simply means to authorize access to an endpoint only for authenticated
 users.
-Is a user is unauthenticated we them anonymous user.
+We also call unauthenticated users for anonymous users.
 
 It works on an endpoint level.
 Meaning actions in controllers.
@@ -62,13 +62,11 @@ Meaning actions in controllers.
 There are two approaches to this.
 
 - **Whitelist**
-  - Deny anonymous users access to all other endpoints.
-  - Then explicitly mark endpoints with `[AllowAnonymous]` that we want to
-    allow anonymous users to access.
+  - Deny anonymous users access to all endpoints.
+  - Except when endpoints are explicitly marked with `[AllowAnonymous]`
 - **Blacklist**
   - Allow anonymous users access to all endpoints.
-  - Then explicitly mark endpoints with `[Authorize]` that only authenticated
-    can access.
+  - Except when endpoints are explicitly marked with `[Authorize]`
 
 We are less likely to accidentally violate the security goals if we deny by
 default.
@@ -104,7 +102,7 @@ _Yeah, I know it is already there, just good to verify for when you are adding
 authorization to your own projects._
 
 - Restart the server.
-- Clear your browser data for localhost:5173 or open an Incognity window.
+- Clear your browser data for localhost:5173 or open an Incognito window.
 - Go to <http://localhost:5153> and you should see "HTTP ERROR 401" or "Error
   code: 401 Unauthorized", depending on your browser.
 
@@ -113,8 +111,8 @@ Not even the login endpoint.
 Hey, wait that's a problem.
 How can they login if they can't access the login endpoint?
 
-We can override the new `RequireAuthenticatedUser` rule for select endpoints.
-To do this, we add `[AllowAnonymous]` to the methods in our controllers.
+We can override the new `RequireAuthenticatedUser` policy for select endpoints.
+To do that, we add `[AllowAnonymous]` to the methods in our controllers.
 
 In `server/Api/Controllers/AuthController.cs`, add `[AllowAnonymous]` to the
 `Login` method.
@@ -147,7 +145,7 @@ Try it out.
 See if you can read a blog post without authentication by going to
 <http://localhost:5173/post/1>.
 
-[Official documentation for Simple Authorization](https://learn.microsoft.com/en-us/aspnet/core/security/authorization/simple)
+  [ASP.NET documentation for Simple Authorization](https://learn.microsoft.com/en-us/aspnet/core/security/authorization/simple)
 
 ### Role-based authorization
 
@@ -178,10 +176,12 @@ public class DraftController(IDraftService service) : ControllerBase
 }
 ```
 
-_Note, the `Roles` parameter takes a sting with the roles to allow, separated
-by a comma. The code use [string
-interpolation](https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/string-interpolation)
-to construct the string from constants defined on the `Role` class._
+> [!NOTE]
+> The `Roles` parameter takes a sting with the roles to allow.
+> Roles are separated by a comma.
+> The code above use [string
+> interpolation](https://learn.microsoft.com/en-us/dotnet/csharp/tutorials/string-interpolation)
+> to construct the string from constants defined on the `Role` class.
 
 Try it out.
 Remember to restart the server first.
@@ -191,7 +191,7 @@ Then login with "<admin@example.com>" or "<editor@example.com>" and see if you c
 access the page.
 
 Also.
-Only editors should be allowed to create and update drafts.
+Only the editor role should be allowed to create and update drafts.
 So change the endpoints as shown:
 
 ```cs
@@ -212,30 +212,34 @@ Login with "<admin@example.com>" and create a draft from
 You should see a message that says "Draft creation failed".
 It means that the authorization policy works.
 
-[Official documentation for Role-based Authorization](https://learn.microsoft.com/en-us/aspnet/core/security/authorization/roles)
+[ASP.NET documentation for Role-based Authorization](https://learn.microsoft.com/en-us/aspnet/core/security/authorization/roles)
 
 ### Resource-based Authorization
 
-Often you will need an authorization policy depends on the users' relationship
-to a resource.
-A resource can be a row in a database table, and a relationship can be a
-foreign-key on that row.
+You will often need an authorization policy where access depends on the users'
+relationship to a resource.
+A resource can be a row in a database table.
+And a relationship can be a foreign-key on that row.
 
-In this application we need a policy that says "only the author of a post is
+In this application, we need a policy that says "only the author of a post is
 allowed to update it".
 
 The resource is a row in the `Posts` database table.
-The relationship is `AuthorId` column referencing the user that created the
-post.
+The relationship is `AuthorId` foreign-key column referencing the user that
+created the post.
 
 ![Database schema showing Post<>Author
 relationship](./assets/resource-based-access-schema.png)
 
 You can find the entity/model for it in
-[Post.cs](server/DataAccess/Entities/Post.cs).
+[Post.cs](../server/DataAccess/Entities/Post.cs).
 
 To implement the policy, we need to make sure that `HttpContext.User` matches
 `AuthorId` on the post before updating is allowed.
+
+> [!NOTE]
+> `HttpContext.User` is the server-side session we have for an authenticated
+> user.
 
 Navigate to `server/Api/Controllers/DraftController.cs` and change the `Update`
 method to:
@@ -259,7 +263,7 @@ Then in `server/Api/Services/DraftService.cs` change the `Update` method in
 Task Update(ClaimsPrincipal claims, long id, Requests.DraftFormData data);
 ```
 
-And then in `DraftService` implementation to:
+Then in `DraftService`, change the implementation to:
 
 ```cs
 public async Task Update(ClaimsPrincipal claims, long id, Requests.DraftFormData data)
@@ -325,11 +329,12 @@ Then `DraftSersvice` implementation to:
  }
 ```
 
-**Notice:** `var currentUserId = claims.GetUserId()` and `AuthorId =
-currentUserId`.
+> [!IMPORTANT]
+> **Notice:** `var currentUserId = claims.GetUserId()` and `AuthorId =
+> currentUserId`.
 
-We need to set an author when a draft is created for the new update policy to
-make sense.
+We need to set an author when a draft is created, before the new update policy
+makes any sense.
 
 Try it out!
 Login with "<editor@example.com>", then go to <http://localhost:5173/draft> and
@@ -340,10 +345,10 @@ Then login with "<othereditor@example.com>" and see if you can edit it.
 
 The authorization policies that have been implemented in the server should of
 course also be reflected on the client.
-A button shouldn't be shown if the user isn't allowed to do the action.
+A button shouldn't be shown only if the user isn't allowed to do the action.
 The client app here doesn't fully mirror the authorization policies on the
 server.
-It doesn't do much harm regarding the security aspect of the system.
+This doesn't do much harm regarding the security aspect of the system.
 But it does hurt the user experience.
 
 ## Conclusion
@@ -351,30 +356,33 @@ But it does hurt the user experience.
 For _Simple Authorization_ and _Role-based Authorization_ we decorated the
 endpoints with the attributes `[AllowAnonymous]` and `[Authorize]`.
 For _Resource-based Authorization_ we didn't use an attribute.
-We implemented it in the service layer instead.
-That is because, we need to talk to the database to find the AuthorId.
+Instead, we implemented it in the service layer instead.
+That is because we need to talk to the database to find the AuthorId.
 I think it makes sense to implement it where we are already retrieving the
 resource from the database.
 
 It is actually also possible to implement _Resource-based Authorization_ with
 attributes.
-That is how the [official documentation for resource-based
+That is how the [ASP.NET documentation for resource-based
 authorization](https://learn.microsoft.com/en-us/aspnet/core/security/authorization/resourcebased)
 does it.
 However, it involves more code and cost an extra round-trip to the database.
 
-_Resource-based Authorization_ policies are many times overlooked.
-However, getting these policies right can be very important.
+_Resource-based Authorization_ policies are many times overlooked, which
+creates vulnerabilities.
+So, getting these policies right is very important.
 For instance: Imagine a banking system.
 It would be terrible if every customer could just withdraw money from anyone's
 account.
+We need policies based on users (customer) relationship to a resource (bank
+account).
 
 As developers, we spend much effort on what users can do in our system.
-It is just as important making sure that users can **not** do what they
-shouldn't be allowed to.
+It is just as important that we spend effort on rules for what the user can
+**not** do.
 
 There are many other ways that authorization policies can be implemented.
-I believe that with these 3 ways shown here, will cover many use-cases.
+I believe that these 3 ways shown here, will cover many use-cases.
 
 That said, you will learn other ways as mature in the profession.
 
