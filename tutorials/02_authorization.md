@@ -282,9 +282,10 @@ public async Task Update(ClaimsPrincipal claims, long id, Requests.DraftFormData
 }
 ```
 
-Notice the `.Where(x => x.AuthorId == currentUserId)`.
-It makes sure that the post can only be updated if the author is the current
-user.
+> [!IMPORTANT]
+> **Notice:** the `.Where(x => x.AuthorId == currentUserId)`.
+> It makes sure that the post can only be updated if the author is the current
+> user.
 
 Now that we are at it.
 We also need to change the `Create` method, so it adds `AuthorId` before
@@ -330,9 +331,9 @@ Then `DraftSersvice` implementation to:
 > [!IMPORTANT]
 > **Notice:** `var currentUserId = claims.GetUserId()` and `AuthorId =
 > currentUserId`.
-
-We need to set an author when a draft is created, before the new update policy
-makes any sense.
+>
+> We need to set an author when a draft is created, before the new update policy
+> makes any sense.
 
 Try it out!
 Login with "<editor@example.com>", then go to <http://localhost:5173/draft> and
