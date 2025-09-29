@@ -33,8 +33,6 @@ We need authentication to determine authorization.
 - **Integrity** means that data cannot be modified in an unauthorized or
   undetected manner.
 
-<small>[Source](https://en.wikipedia.org/wiki/Information_security#Basic_principles)</small>
-
 Authorization - put simply - is policies on who can do what.
 
 There are many ways such policies can be implemented.
