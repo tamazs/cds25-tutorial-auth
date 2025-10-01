@@ -1,25 +1,28 @@
 using Api.Models.Dtos.Requests;
 using Api.Models.Dtos.Responses;
+using Api.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController : ControllerBase
+public class AuthController(IAuthService service) : ControllerBase
 {
     [HttpPost]
     [Route("login")]
     public async Task<LoginResponse> Login([FromBody] LoginRequest request)
     {
-        throw new NotImplementedException();
+        var userInfo = service.Authenticate(request);
+        return new LoginResponse();
     }
 
     [HttpPost]
     [Route("register")]
     public async Task<RegisterResponse> Register([FromBody] RegisterRequest request)
     {
-        throw new NotImplementedException();
+        var userInfo = await service.Register(request);
+        return new RegisterResponse(UserName: userInfo.UserName);
     }
 
     [HttpPost]

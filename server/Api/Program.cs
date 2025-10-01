@@ -1,9 +1,11 @@
 using Api.Etc;
 using Api.Etc.NSwag;
+using Api.Security;
 using Api.Services;
 using DataAccess;
 using DataAccess.Entities;
 using DataAccess.Repositories;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -45,6 +47,8 @@ public class Program
         builder.Services.AddScoped<IRepository<User>, UserRepository>();
         builder.Services.AddScoped<IRepository<Post>, PostRepository>();
         builder.Services.AddScoped<IRepository<Comment>, CommentRepository>();
+        builder.Services.AddScoped<IPasswordHasher<User>, NSecArgon2idPasswordHasher>();
+        builder.Services.AddScoped<IAuthService, AuthService>();
 
         // Services
         builder.Services.AddScoped<IBlogService, BlogService>();
