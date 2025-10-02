@@ -474,6 +474,7 @@ export class DraftClient {
 }
 
 export interface LoginResponse {
+    jwt: string;
 }
 
 export interface LoginRequest {

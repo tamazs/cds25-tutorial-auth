@@ -2,19 +2,21 @@ using Api.Models.Dtos.Requests;
 using Api.Models.Dtos.Responses;
 using Api.Services;
 using Microsoft.AspNetCore.Mvc;
+using Api.Security;
 
 namespace Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IAuthService service) : ControllerBase
+public class AuthController(IAuthService service, ITokenService tokenService) : ControllerBase
 {
     [HttpPost]
     [Route("login")]
     public async Task<LoginResponse> Login([FromBody] LoginRequest request)
     {
         var userInfo = service.Authenticate(request);
-        return new LoginResponse();
+        var token = tokenService.CreateToken(userInfo);
+        return new LoginResponse(token);
     }
 
     [HttpPost]
@@ -34,8 +36,8 @@ public class AuthController(IAuthService service) : ControllerBase
 
     [HttpGet]
     [Route("userinfo")]
-    public async Task<AuthUserInfo> UserInfo()
+    public async Task<AuthUserInfo?> UserInfo()
     {
-        throw new NotImplementedException();
+        return service.GetUserInfo(User);
     }
 }

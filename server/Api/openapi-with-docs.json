@@ -372,7 +372,15 @@
     "schemas": {
       "LoginResponse": {
         "type": "object",
-        "additionalProperties": false
+        "additionalProperties": false,
+        "required": [
+          "jwt"
+        ],
+        "properties": {
+          "jwt": {
+            "type": "string"
+          }
+        }
       },
       "LoginRequest": {
         "type": "object",

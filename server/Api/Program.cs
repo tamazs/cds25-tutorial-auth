@@ -5,6 +5,7 @@ using Api.Services;
 using DataAccess;
 using DataAccess.Entities;
 using DataAccess.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,38 @@ public class Program
         builder.Services.AddScoped<IRepository<Comment>, CommentRepository>();
         builder.Services.AddScoped<IPasswordHasher<User>, NSecArgon2idPasswordHasher>();
         builder.Services.AddScoped<IAuthService, AuthService>();
+        builder.Services.AddScoped<ITokenService, JwtService>();
+        
+        // Authentication & Authorization
+        builder
+            .Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = JwtService.ValidationParameters(
+                    builder.Configuration
+                );
+                // Add this for debugging
+                options.Events = new JwtBearerEvents
+                {
+                    OnAuthenticationFailed = context =>
+                    {
+                        Console.WriteLine($"Authentication failed: {context.Exception}");
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        Console.WriteLine("Token validated successfully");
+                        return Task.CompletedTask;
+                    },
+                };
+            });
+        builder.Services.AddAuthorization();
 
         // Services
         builder.Services.AddScoped<IBlogService, BlogService>();
@@ -89,6 +122,7 @@ public class Program
         // app.UseHttpsRedirection();
         app.UseExceptionHandler();
 
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapControllers();
